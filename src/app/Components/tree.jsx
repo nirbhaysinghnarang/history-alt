@@ -37,7 +37,7 @@ const PivotTree = ({ treeData, onNodeClick }) => {
       const processNode = (node, level = 0, leftOffset = 0, path = []) => {
         if (!node) return;
 
-        const VERTICAL_SPACING = 500;
+        const VERTICAL_SPACING = 50;
         const NODE_SPACING = 350;
         const id = path.length ? path.join('-') : 'root';
         
@@ -128,37 +128,37 @@ const PivotTree = ({ treeData, onNodeClick }) => {
   }, [onNodeClick]);
 
   return (
-    <div className="w-full h-[80vh] bg-gray-50">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={handleNodeClick}
-        nodeTypes={nodeTypes}
-        fitView
-        minZoom={0.1}
-        maxZoom={1.5}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
-        fitViewOptions={{ 
-          padding: 0.2,
-          minZoom: 0.1,
-          maxZoom: 1.5
-        }}
-        className="bg-gray-50"
-      >
-        <Background 
-          color="#666666" 
-          variant="dots" 
-          size={1} 
-          gap={16} 
-        />
-        <Controls 
-          position="bottom-right"
-          className="bg-white"
-        />
-      </ReactFlow>
-    </div>
+    <div className="fixed inset-0 bg-gray-50">
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onNodeClick={handleNodeClick}
+      nodeTypes={nodeTypes}
+      fitView
+      minZoom={0.1}
+      maxZoom={1.5}
+      defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
+      fitViewOptions={{ 
+        padding: 0.2,
+        minZoom: 0.1,
+        maxZoom: 1.5
+      }}
+      className="bg-gray-50"
+    >
+      <Background 
+        color="#666666" 
+        variant="dots" 
+        size={1} 
+        gap={16} 
+      />
+      <Controls 
+        position="bottom-right"
+        className="bg-white"
+      />
+    </ReactFlow>
+  </div>
   );
 };
 

@@ -7,51 +7,24 @@ import {
   Typography,
   TextField,
   Button,
-  Box,
   Alert,
   CircularProgress,
-  List,
-  ListItem,
-  ListItemText
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import PivotTree from './Components/tree';
 
-// Create custom e-ink theme
 const theme = createTheme({
   typography: {
     fontFamily: 'Outfit',
     h1: {
       fontSize: '2rem',
       fontFamily: "Ysabeau SC",
-
       fontWeight: 400,
       color: '#000000',
       lineHeight: 1.2,
     },
-    h2: {
-      fontSize: '1.5rem',
-      fontFamily: "Ysabeau SC",
-
-      fontWeight: 400,
-      color: '#000000',
-      lineHeight: 1.3,
-    },
-    h3: {
-      fontSize: '1.25rem',
-      fontFamily: "Ysabeau SC",
-
-      fontWeight: 400,
-      color: '#333333',
-      lineHeight: 1.4,
-    },
     body1: {
-      fontFamily: 'Outfit',
-      color: '#000000',
-      lineHeight: 1.6,
-    },
-    body2: {
       fontFamily: 'Outfit',
       color: '#000000',
       lineHeight: 1.6,
@@ -62,24 +35,23 @@ const theme = createTheme({
     primary: {
       main: '#000000',
     },
-    secondary: {
-      main: '#555555',
-    },
     background: {
       default: '#f5f5f5',
       paper: '#f5f5f5',
     },
-    text: {
-      primary: '#000000',
-      secondary: '#555555',
-    },
   },
   components: {
-    MuiPaper: {
+    MuiTextField: {
+      defaultProps: {
+        variant: 'outlined',
+      },
       styleOverrides: {
         root: {
-          borderRadius: 0,
-          boxShadow: 'none',
+          '& .MuiOutlinedInput-root': {
+            fontFamily: 'Outfit',
+            borderRadius: 0,
+            backgroundColor: '#ffffff',
+          },
         },
       },
     },
@@ -87,60 +59,51 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 0,
-          boxShadow: 'none',
           textTransform: 'none',
-          '&:hover': {
-            boxShadow: 'none',
-          },
-        },
-      },
-    },
-    MuiTextField: {
-      fontFamily: 'Outfit',
-      styleOverrides: {
-        fontFamily: 'Outfit',
-        root: {
-          '& .MuiOutlinedInput-root': {
-            fontFamily: 'Outfit',
-            borderRadius: 0,
-          },
         },
       },
     },
   },
 });
 
-// Styled components
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  paddingX: theme.spacing(4),
-  paddingY: theme.spacing(2),
-  backgroundColor: theme.palette.background.paper,
-}));
-
-const StyledForm = styled('form')(({ theme }) => ({
+const FullscreenContainer = styled('div')({
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
   display: 'flex',
-  gap: theme.spacing(2),
-  marginBottom: theme.spacing(4),
-  padding: theme.spacing(2),
-}));
+  flexDirection: 'column',
+});
 
-const NodeDetailsPaper = styled(Paper)(({ theme }) => ({
-  marginTop: theme.spacing(4),
-  padding: theme.spacing(3),
-  border: '1px solid #000000',
-  backgroundColor: '#f5f5f5',
-}));
+const HeaderOverlay = styled('div')({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 10,
+  padding: '1rem 2rem',
+  background: 'linear-gradient(to bottom, rgba(245, 245, 245, 0.95), rgba(245, 245, 245, 0.85))',
+});
+
+const TreeContainer = styled('div')({
+  flexGrow: 1,
+  width: '100%',
+  height: '100vh',
+});
+
+const StyledForm = styled('form')({
+  display: 'flex',
+  gap: '1rem',
+  marginTop: '0.5rem',
+});
 
 const PivotTreeViewer = () => {
   const [treeData, setTreeData] = useState(null);
-  const [selectedNode, setSelectedNode] = useState(null);
   const [error, setError] = useState(null);
   const [prompt, setPrompt] = useState('');
   const [loading, setLoading] = useState(false);
   const [ws, setWs] = useState(null);
-  const [streamingNode, setStreamingNode] = useState({});
-  const [streamingOutcomes, setStreamingOutcomes] = useState({});
-  const [streamingNodes, setStreamingNodes] = useState({});
 
   useEffect(() => {
     const wsUrl = `ws://localhost:3001/ws`;
@@ -154,126 +117,64 @@ const PivotTreeViewer = () => {
 
     websocket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      switch (message.type) {
-        case 'tree_update':
-          if(message.tree){
-            setTreeData(message.tree);
-
-          }
-          console.log(message.tree)
-          break;
-        case 'complete':
-          setLoading(false);
-          break;
-        case 'error':
-          setError(message.error);
-          break;
+      if (message.type === 'tree_update' && message.tree) {
+        setTreeData(message.tree);
+      } else if (message.type === 'complete') {
+        setLoading(false);
+      } else if (message.type === 'error') {
+        setError(message.error);
+        setLoading(false);
       }
     };
 
     return () => websocket.close();
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleInputChange = useCallback((e) => {
+    setPrompt(e.target.value);
+  }, []);
+
+  const handleSubmit = useCallback((e) => {
     e.preventDefault();
+    if (!prompt.trim()) return;
+
     setLoading(true);
     setError(null);
     setTreeData(null);
-    setSelectedNode(null);
 
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify({
         type: 'generate',
-        prompt,
+        prompt: prompt.trim(),
         maxDepth: 3
       }));
     } else {
       setError('WebSocket not connected.');
       setLoading(false);
     }
-  };
-
-
-  const createPlaceholderNode = () => ({
-    year: 'Unknown',
-    description: 'Loading...',
-    actors: [],
-    possible_outcomes: [],
-    children: []
-  });
-
-  const updateNodeAtPath = useCallback((root, path, newNode) => {
-    if (path.length === 0) return newNode;
-
-    const cloneWithNewChild = (node, index, newChild) => ({
-      ...node,
-      children: [...(node.children || [])].map((child, i) => i === index ? newChild : child)
-    });
-
-    const updateLevel = (node, [currentIndex, ...remainingPath]) => {
-      if (remainingPath.length === 0) {
-        return cloneWithNewChild(node, currentIndex, newNode);
-      }
-
-      const children = [...(node.children || [])];
-      while (children.length <= currentIndex) {
-        children.push(createPlaceholderNode());
-      }
-
-      return cloneWithNewChild(
-        node,
-        currentIndex,
-        updateLevel(children[currentIndex], remainingPath)
-      );
-    };
-
-    return updateLevel(root, path);
-  }, []);
-
+  }, [prompt, ws]);
 
   return (
     <ThemeProvider theme={theme}>
-      <Container
-        maxWidth={false}
-        sx={{
-          minHeight: '100vh',
-          backgroundColor: theme.palette.background.default,
-
-          opacity: 0.95,
-          py: 4,
-        }}
-      >
-        <StyledPaper>
-
+      <FullscreenContainer>
+        <HeaderOverlay>
           <Typography variant="h1" gutterBottom>
             Historical Pivot Exploration
           </Typography>
-          <Typography variant="body1" gutterBottom sx={{ color: 'text.secondary' }}>
-            Unravel alternate historical narratives by exploring pivotal moments
-          </Typography>
-
           <StyledForm onSubmit={handleSubmit}>
             <TextField
               fullWidth
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              onChange={handleInputChange}
               placeholder="Enter a historical turning point..."
-              variant="outlined"
               required
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#ffffff',
-                },
-                '& .MuiInputBase-input': {
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                },
-              }}
+              disabled={loading}
             />
             <Button
               type="submit"
               variant="contained"
               color="primary"
-              disabled={loading}
+              disabled={loading || !prompt.trim()}
               sx={{
                 minWidth: 200,
                 backgroundColor: '#000000',
@@ -285,15 +186,11 @@ const PivotTreeViewer = () => {
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Generate Pivot Tree'}
             </Button>
           </StyledForm>
-
           {error && (
-            <Alert
-              severity="error"
-              sx={{
-                mb: 4,
-                '& .MuiAlert-message': {
-                  fontFamily: 'Georgia, "Times New Roman", serif',
-                },
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mt: 2,
                 backgroundColor: '#ffcccc',
                 color: '#000000',
               }}
@@ -301,17 +198,11 @@ const PivotTreeViewer = () => {
               {error}
             </Alert>
           )}
-
-
-          <PivotTree
-            treeData={treeData}
-            streamingNodes={streamingNodes}
-            onNodeClick={setSelectedNode}
-          />
-
-
-        </StyledPaper>
-      </Container>
+        </HeaderOverlay>
+        <TreeContainer>
+          <PivotTree treeData={treeData} />
+        </TreeContainer>
+      </FullscreenContainer>
     </ThemeProvider>
   );
 };
