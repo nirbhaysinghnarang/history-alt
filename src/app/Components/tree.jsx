@@ -37,7 +37,7 @@ const PivotTree = ({ treeData, onNodeClick }) => {
       const processNode = (node, level = 0, leftOffset = 0, path = []) => {
         if (!node) return;
 
-        const VERTICAL_SPACING = 50;
+        const VERTICAL_SPACING = 500;
         const NODE_SPACING = 350;
         const id = path.length ? path.join('-') : 'root';
         
