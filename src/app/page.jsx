@@ -106,7 +106,7 @@ const PivotTreeViewer = () => {
   const [ws, setWs] = useState(null);
 
   useEffect(() => {
-    const wsUrl = `ws://localhost:3001/ws`;
+    const wsUrl = `wss://hist-alt-be.onrender.com/ws`;
     const websocket = new WebSocket(wsUrl);
     setWs(websocket);
 
