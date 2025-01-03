@@ -19,11 +19,13 @@ const PivotTree = ({ treeData, onNodeClick }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const nodePositions = useRef(new Map());
-
+  const newestNodeId = useRef("")
   const calculateLayout = useMemo(() => {
     return (tree) => {
       const nodes = [];
       const edges = [];
+      
+      // Track the newest node ID
       
       // First pass: calculate width of each subtree
       const getSubtreeWidth = (node) => {
@@ -32,17 +34,17 @@ const PivotTree = ({ treeData, onNodeClick }) => {
         }
         return node.children.reduce((sum, child) => sum + getSubtreeWidth(child), 0);
       };
-
+  
       // Second pass: position nodes
       const processNode = (node, level = 0, leftOffset = 0, path = []) => {
         if (!node) return;
-
+  
         const VERTICAL_SPACING = 500;
         const NODE_SPACING = 350;
-        const id = path.length ? path.join('-') : 'root';
-        
-        // Calculate this node's position
+        const id = path.length ? path.join('-') : 'root';   
+  
         let position;
+  
         if (nodePositions.current.has(id)) {
           position = nodePositions.current.get(id);
         } else {
@@ -53,16 +55,21 @@ const PivotTree = ({ treeData, onNodeClick }) => {
             y: level * VERTICAL_SPACING
           };
           nodePositions.current.set(id, position);
+          // Update newest node ID when we find a new node
+          newestNodeId.current = id;
         }
         
-        // Add node
+        
         nodes.push({
           id,
           type: 'custom',
           position,
-          data: node,
+          data: {
+            ...node, 
+            isNewNode: id === newestNodeId.current
+          },
         });
-
+  
         // Add edge to parent if not root
         if (path.length > 0) {
           const parentId = path.slice(0, -1).join('-') || 'root';
@@ -84,7 +91,7 @@ const PivotTree = ({ treeData, onNodeClick }) => {
             }
           });
         }
-
+  
         // Process children
         let currentOffset = leftOffset;
         node.children?.forEach((child, childIndex) => {
@@ -94,7 +101,7 @@ const PivotTree = ({ treeData, onNodeClick }) => {
           currentOffset += childWidth * NODE_SPACING;
         });
       };
-
+  
       processNode(tree);
       return { nodes, edges };
     };
@@ -114,6 +121,9 @@ const PivotTree = ({ treeData, onNodeClick }) => {
         return prevEdges;
       });
     }, 100),
+
+
+
     [calculateLayout, setNodes, setEdges]
   );
 

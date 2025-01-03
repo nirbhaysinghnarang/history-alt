@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { Handle, Position } from 'reactflow';
 import { PersonStanding, Flag, Group, ArrowRight, Clock, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -21,7 +21,7 @@ const getActorIcon = (type) => {
 const RelationshipBadge = ({ relationship }) => (
     relationship ? (
         <div className="flex items-center gap-1 px-2 py-1 text-xs rounded border border-gray-200">
-            <span className="font-medium">{relationship.target.name}</span>
+            <span className="font-medium">{relationship?.target?.name ?? "Loading"}</span>
             <span className="text-gray-500">({relationship.relationship_type})</span>
             <span className="text-gray-400">• {relationship.strength}</span>
         </div>
@@ -39,8 +39,17 @@ const RamificationCard = ({ ramification }) => (
 );
 
 const CustomNode = ({ data, selected }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(!!data['isNewNode']);
+
+    
+    // Add useEffect to track changes to isNewNode
+    useEffect(() => {
+        setIsExpanded(!!data['isNewNode']);
+    }, [data['isNewNode']]);
+
     const shouldExpand = isExpanded;
+
+
 
     return (
         <div
@@ -115,11 +124,13 @@ const CustomNode = ({ data, selected }) => {
                             <div className="text-sm font-medium mb-2">Possible Outcomes</div>
                             <div className="space-y-3">
                                 {data.possible_outcomes.map((outcome, idx) => (
+
+
                                     <div key={idx} className="bg-white p-2 rounded border border-gray-200">
                                         <div className="flex items-center gap-2 text-sm">
                                             <ArrowRight size={14} />
-                                            <span className="font-medium">{outcome.actor.name}:</span>
-                                            <span className="text-gray-600">{outcome.action}</span>
+                                          <span className="font-medium">{outcome.actor?.name ?? 'Loading'}:</span>
+                                            <span className="text-gray-600">{outcome.action ?? 'No Action Specified'}</span>
                                         </div>
 
                                         <div className="space-y-2 mt-2">
