@@ -16,16 +16,16 @@ import PivotTree from './Components/tree';
 
 const theme = createTheme({
   typography: {
-    fontFamily: 'Outfit',
+    fontFamily: 'Crimson Pro',
     h1: {
       fontSize: '2rem',
-      fontFamily: "Ysabeau SC",
+      fontFamily: "Crimson Pro",
       fontWeight: 400,
       color: '#000000',
       lineHeight: 1.2,
     },
     body1: {
-      fontFamily: 'Outfit',
+      fontFamily: 'Crimson Pro',
       color: '#000000',
       lineHeight: 1.6,
     },
@@ -48,7 +48,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            fontFamily: 'Outfit',
+            fontFamily: 'Crimson Pro',
             borderRadius: 0,
             backgroundColor: '#ffffff',
           },

@@ -31,7 +31,7 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
-<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Outfit:wght@100..900&family=Ysabeau+SC:wght@1..1000&display=swap" rel="stylesheet"/>
+       <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@200..900&family=MedievalSharp&family=Outfit:wght@100..900&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=Ysabeau+SC:wght@1..1000&display=swap" rel="stylesheet"/>
 
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
